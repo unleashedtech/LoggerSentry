@@ -92,6 +92,8 @@ class Hackathon_LoggerSentry_Model_Sentry extends Zend_Log_Writer_Abstract
                 return; // Don't log anything warning or less severe.
             }
 
+            $this->_addUserContext($eventObj);
+
             $this->_sentryClient->captureMessage(
                 $event['message'], array(), $this->_priorityToLevelMapping[$priority], true, $additional
             );
@@ -125,6 +127,38 @@ class Hackathon_LoggerSentry_Model_Sentry extends Zend_Log_Writer_Abstract
         }
 
         return $this;
+    }
+
+    protected function _addUserContext($eventObj)
+    {
+        if (empty($_SESSION)) {
+            return;
+        }
+
+        // Include admin information if available
+        $data = array_filter(array(
+            'admin_user_id' => $eventObj->getAdminUserId(),
+            'admin_user_name' => $eventObj->getAdminUserName(),
+        ));
+
+        // Include customer id and group
+        $customerSession = Mage::getSingleton('customer/session');
+        $data['customer_group_id'] = $customerSession->getCustomerGroupId();
+        if ($customerSession->isLoggedIn()) {
+            $data['customer_id'] = $customerSession->getCustomer()->getId();
+        } else {
+            $data['customer_id'] = 'guest';
+        }
+
+        // Include shopping cart id
+        $checkoutSession = Mage::getSingleton('checkout/session');
+        if ($checkoutSession->hasQuote()) {
+            $data['quote_id'] = $checkoutSession->getQuoteId();
+        }
+
+        if (!empty($data)) {
+            $this->_sentryClient->user_context($data);
+        }
     }
 
     /**
