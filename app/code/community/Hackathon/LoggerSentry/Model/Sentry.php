@@ -102,10 +102,7 @@ class Hackathon_LoggerSentry_Model_Sentry extends Zend_Log_Writer_Abstract
      */
     protected function _isHighEnoughPriorityToReport($priority)
     {
-        if ($priority > (int)Mage::helper('firegento_logger')->getLoggerConfig('sentry/priority')) {
-            return false; // Don't log anything warning or less severe than configured.
-        }
-        return true;
+        return $priority <= (int)Mage::helper('firegento_logger')->getLoggerConfig('sentry/priority');
     }
 
     /**
