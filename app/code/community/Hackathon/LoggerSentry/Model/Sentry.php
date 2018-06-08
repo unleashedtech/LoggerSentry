@@ -94,8 +94,10 @@ class Hackathon_LoggerSentry_Model_Sentry extends Zend_Log_Writer_Abstract
 
             $this->_addUserContext($eventObj);
 
+            $stack = $this->_getStackTrace($event);
+
             $this->_sentryClient->captureMessage(
-                $event['message'], array(), $this->_priorityToLevelMapping[$priority], true, $additional
+                $event['message'], array(), $this->_priorityToLevelMapping[$priority], $stack, $additional
             );
 
         } catch (Exception $e) {
@@ -159,6 +161,29 @@ class Hackathon_LoggerSentry_Model_Sentry extends Zend_Log_Writer_Abstract
         if (!empty($data)) {
             $this->_sentryClient->user_context($data);
         }
+    }
+
+    /**
+     * @param array $event
+     *
+     * @return array
+     */
+    protected function _getStackTrace($event)
+    {
+        $stack = debug_backtrace();
+        // Remove the call to this _getStackTrace() function
+        array_shift($stack);
+
+        if (isset($event['file']) && isset($event['line'])) {
+            // "Unwind" the stack until we find where this was actually triggered from
+            foreach ($stack as $i => $item) {
+                if ($item['line'] === $event['line'] && strpos($item['file'], $event['file']) !== false) {
+                    return array_slice($stack, $i);
+                }
+            }
+        }
+
+        return $stack;
     }
 
     /**
