@@ -79,6 +79,10 @@ class Hackathon_LoggerSentry_Model_Sentry extends Zend_Log_Writer_Abstract
                 }
             }
 
+            if (!empty($eventObj->getStoreCode())) {
+                $additional['store_code'] = $eventObj->getStoreCode();
+            }
+
             $this->_assumePriorityByMessage($event);
 
             // if we still can't figure it out, assume it's an error
