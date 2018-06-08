@@ -83,7 +83,7 @@ class Hackathon_LoggerSentry_Model_Sentry extends Zend_Log_Writer_Abstract
             $this->_assumePriorityByMessage($event);
 
             // if we still can't figure it out, assume it's an error
-            $priority = isset($event['priority']) && !empty($event['priority']) ? $event['priority'] : 3;
+            $priority = !empty($event['priority']) ? $event['priority'] : 3;
 
             if (!$this->_isHighEnoughPriorityToReport($priority)) {
                 return $this; // Don't log anything warning or less severe.
