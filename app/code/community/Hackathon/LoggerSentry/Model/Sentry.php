@@ -34,12 +34,10 @@ class Hackathon_LoggerSentry_Model_Sentry extends Zend_Log_Writer_Abstract
      * ignore filename - it is Zend_Log_Writer_Abstract dependency
      *
      * @param string $filename
-     *
-     * @return \Hackathon_LoggerSentry_Model_Sentry
      */
     public function __construct($filename)
     {
-        /* @var $helper Hackathon_Logger_Helper_Data */
+        /* @var $helper FireGento_Logger_Helper_Data */
         $helper = Mage::helper('firegento_logger');
         $options = array(
             'logger' => $helper->getLoggerConfig('sentry/logger_name')
@@ -63,7 +61,7 @@ class Hackathon_LoggerSentry_Model_Sentry extends Zend_Log_Writer_Abstract
     protected function _write($eventObj)
     {
         try {
-            /* @var $helper Hackathon_Logger_Helper_Data */
+            /* @var $helper FireGento_Logger_Helper_Data */
             $helper = Mage::helper('firegento_logger');
             $helper->addEventMetadata($eventObj);
 
@@ -86,7 +84,7 @@ class Hackathon_LoggerSentry_Model_Sentry extends Zend_Log_Writer_Abstract
             $priority = !empty($event['priority']) ? $event['priority'] : 3;
 
             if (!$this->_isHighEnoughPriorityToReport($priority)) {
-                return $this; // Don't log anything warning or less severe.
+                return; // Don't log anything warning or less severe.
             }
 
             $this->_sentryClient->captureMessage(
